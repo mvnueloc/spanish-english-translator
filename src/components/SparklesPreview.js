@@ -39,12 +39,12 @@ export function SparklesPreview() {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center overflow-hidden rounded-md">
       <h1
-        className={`md:text-6xl text-3xl lg:text-9xl font-bold text-center text-white relative z-20 transition-opacity duration-1000 ${
+        className={`text-6xl lg:text-9xl font-bold text-center text-white relative z-20 transition-opacity duration-1000 ${
           fade ? "opacity-100" : "opacity-0"
         }`}>
         {title}
       </h1>
-      <div className="w-[40rem] h-40 relative">
+      <div className="w-[35rem] md:w-[40rem] h-40 relative">
         {/* Gradients */}
         <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
         <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
@@ -57,7 +57,7 @@ export function SparklesPreview() {
           minSize={0.1}
           maxSize={0.5}
           particleDensity={500}
-          className="w-full h-[130px]"
+          className="w-[30rem] h-[130px]"
           particleColor="#FFFFFF"
         />
 

@@ -7,6 +7,7 @@ import { SparklesPreview } from "@/components/SparklesPreview";
 import Footer from "@/components/Footer";
 
 export default function Home() {
+  const umbralLevenshtein = 1;
   const [palabra, setPalabra] = useState(null);
   const [traduccion, setTraduccion] = useState("");
   const [significado, setSignificado] = useState("");
@@ -42,7 +43,7 @@ export default function Home() {
   }
 
   function buscarSugerencias(palabraBuscada) {
-    const umbral = 2;
+    const umbral = umbralLevenshtein;
     const palabrasDiccionario = Object.keys(miDiccionario);
     const sugerencias = palabrasDiccionario.filter(
       (palabraDic) => distanciaLevenshtein(palabraBuscada, palabraDic) <= umbral
@@ -112,8 +113,12 @@ export default function Home() {
 
           {traduccion ? (
             <div className="text-gray-100 mt-12 text-center">
-              <h2 className="text-4xl font-bold">Traducción encontrada:</h2>
-              <p className="mt-4 text-3xl font-light">{traduccion}</p>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Traducción encontrada:
+              </h2>
+              <p className="mt-4 text-2xl md:text-3xl font-light">
+                {traduccion}
+              </p>
             </div>
           ) : (
             buscado && (
@@ -140,14 +145,14 @@ export default function Home() {
                   </div>
                 )}
 
-                <h2 className="text-4xl font-bold mt-8">
+                <h2 className="text-3xl md:text-4xl font-bold mt-8">
                   No se encontró traducción
                 </h2>
 
                 <div className="flex justify-center">
                   <div>
                     <input
-                      className="text-gray-100 flex w-[400px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-lg bg-transparent mt-12"
+                      className="text-gray-100 flex w-[250px] md:w-[400px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-lg bg-transparent mt-12"
                       type="text"
                       label="text"
                       placeholder="Ingresa el significado"

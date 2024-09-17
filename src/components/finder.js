@@ -31,7 +31,7 @@ const Finder = ({ setPalabra }) => {
   return (
     <main className="flex justify-center">
       <input
-        className="text-gray-100 flex w-[450px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-l-lg bg-transparent "
+        className="text-gray-100 flex w-[250px] md:w-[450px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-l-lg bg-transparent "
         type="text"
         label="text"
         placeholder="Ingresa una palabra"
