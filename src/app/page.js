@@ -134,6 +134,7 @@ export default function Home() {
                           // onClick={() => {
                           //   setPalabra(sug);
                           //   handleTranslate();
+                          //  setSugerencias([]);
                           // }}
                         >
                           {sug}
