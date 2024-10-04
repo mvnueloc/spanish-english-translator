@@ -27,12 +27,13 @@ export const SearchIcon = (props) => (
   </svg>
 );
 
-const Finder = ({ setPalabra }) => {
+const Finder = ({ setPalabra, palabra }) => {
   return (
     <main className="flex justify-center">
       <input
-        className="text-gray-100 flex w-[250px] md:w-[450px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-l-lg bg-transparent "
+        className="text-gray-100 flex w-[300px] md:w-[600px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-lg bg-transparent "
         type="text"
+        value={palabra}
         label="text"
         placeholder="Ingresa una palabra"
         onChange={(e) => setPalabra(e.target.value)}

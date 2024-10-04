@@ -1,19 +1,23 @@
 "use client";
 
 import Finder from "@/components/finder";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import diccionarioBase from "@/data/diccionario";
 import { SparklesPreview } from "@/components/SparklesPreview";
 import Footer from "@/components/Footer";
 
 export default function Home() {
   const umbralLevenshtein = 1;
-  const [palabra, setPalabra] = useState(null);
+  const [palabra, setPalabra] = useState("");
   const [traduccion, setTraduccion] = useState("");
   const [significado, setSignificado] = useState("");
   const [buscado, setBuscado] = useState(false);
   const [miDiccionario, setMiDiccionario] = useState(diccionarioBase);
   const [sugerencias, setSugerencias] = useState([]);
+
+  useEffect(() => {
+    handleTranslate();
+  }, [palabra]);
 
   function distanciaLevenshtein(str1, str2) {
     const matriz = Array(str2.length + 1)
@@ -90,8 +94,11 @@ export default function Home() {
             <SparklesPreview />
           </div>
           <div className="flex justify-center">
-            <Finder setPalabra={setPalabra} />
-            <button
+            <Finder
+              setPalabra={setPalabra}
+              palabra={palabra}
+            />
+            {/* <button
               className="text-gray-100 rounded-r-lg bg-blue-600 py-2 px-3 border-2 border-blue-600/[0.3] flex items-center "
               onClick={handleTranslate}>
               Traducir{" "}
@@ -108,7 +115,7 @@ export default function Home() {
                   />
                 </svg>
               </span>
-            </button>
+            </button> */}
           </div>
 
           {traduccion ? (
@@ -131,12 +138,10 @@ export default function Home() {
                         <button
                           key={idx}
                           className="text-blue-400"
-                          // onClick={() => {
-                          //   setPalabra(sug);
-                          //   handleTranslate();
-                          //  setSugerencias([]);
-                          // }}
-                        >
+                          onClick={() => {
+                            setPalabra(sug);
+                            // handleTranslate();
+                          }}>
                           {sug}
                           {idx < sugerencias.length - 1 ? ", " : ""}
                         </button>
