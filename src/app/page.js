@@ -11,13 +11,63 @@ export default function Home() {
   const [palabra, setPalabra] = useState("");
   const [traduccion, setTraduccion] = useState("");
   const [significado, setSignificado] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [colorCategoria, setColorCategoria] = useState("");
   const [buscado, setBuscado] = useState(false);
   const [miDiccionario, setMiDiccionario] = useState(diccionarioBase);
   const [sugerencias, setSugerencias] = useState([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
+  const [hayTraducciones, setHayTraducciones] = useState(false);
+
+  // Añadir nuevos estados para listas
+  const [palabras, setPalabras] = useState([]);
+  const [traducciones, setTraducciones] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [coloresCategorias, setColoresCategorias] = useState([]);
 
   useEffect(() => {
     handleTranslate();
   }, [palabra]);
+
+  // useEffect(() => {
+  //   console.log(hayTraducciones);
+  // }, [hayTraducciones]);
+
+  useEffect(() => {
+    if (palabra == "") {
+      setTraduccion("");
+      setCategoria("");
+      setSugerencias([]);
+      setHayTraducciones(false);
+      setTraducciones([]);
+      setCategorias([]);
+      setColoresCategorias([]);
+      setPalabras([]);
+      setBuscado(false);
+    }
+  }, [palabra]);
+
+  useEffect(() => {
+    if (categoria == "sustantivo") {
+      setColorCategoria("text-green-500");
+    } else if (categoria == "adjetivo") {
+      setColorCategoria("text-blue-500");
+    } else if (categoria == "articulo") {
+      setColorCategoria("text-yellow-500");
+    } else if (categoria == "pronombre") {
+      setColorCategoria("text-red-500");
+    } else if (categoria == "verbo") {
+      setColorCategoria("text-purple-500");
+    } else if (categoria == "adverbio") {
+      setColorCategoria("text-pink-500");
+    } else if (categoria == "preposicion") {
+      setColorCategoria("text-indigo-500");
+    } else if (categoria == "conjuncion") {
+      setColorCategoria("text-gray-500");
+    } else if (categoria == "interjección") {
+      setColorCategoria("text-blue-500");
+    }
+  }, [categoria]);
 
   function distanciaLevenshtein(str1, str2) {
     const matriz = Array(str2.length + 1)
@@ -52,22 +102,72 @@ export default function Home() {
     const sugerencias = palabrasDiccionario.filter(
       (palabraDic) => distanciaLevenshtein(palabraBuscada, palabraDic) <= umbral
     );
-    return sugerencias;
+    return sugerencias.length > 0 ? sugerencias : null;
   }
 
   function handleTranslate() {
     if (!palabra) return;
-    const palabraNormalizada = palabra.toLowerCase();
-    const resultado = miDiccionario[palabraNormalizada];
+    const palabrasIngresadas = palabra.toLowerCase().split(" ");
+    const nuevasTraducciones = [];
+    const nuevasCategorias = [];
+    const nuevosColores = [];
+    const nuevasSugerencias = [];
     setBuscado(true);
 
-    if (resultado) {
-      setTraduccion(resultado);
-      setSugerencias([]);
-    } else {
-      setTraduccion(null);
-      const posiblesSugerencias = buscarSugerencias(palabraNormalizada);
-      setSugerencias(posiblesSugerencias);
+    palabrasIngresadas.forEach((palabraActual) => {
+      const resultado = miDiccionario[palabraActual];
+      if (resultado) {
+        nuevasTraducciones.push(resultado.traduccion);
+        nuevasCategorias.push(resultado.categoria);
+        nuevosColores.push(obtenerColorCategoria(resultado.categoria));
+        nuevasSugerencias.push(null);
+      } else {
+        const sugerencia = buscarSugerencias(palabraActual);
+        if (sugerencia) {
+          nuevasTraducciones.push(palabraActual);
+          nuevasCategorias.push(null);
+          nuevosColores.push("text-gray-100 line-through");
+          nuevasSugerencias.push(sugerencia);
+        } else {
+          nuevasTraducciones.push(palabraActual);
+          nuevasCategorias.push(null);
+          nuevosColores.push("text-gray-100 line-through");
+          nuevasSugerencias.push([]);
+        }
+      }
+    });
+
+    setPalabras(palabrasIngresadas);
+    setTraducciones(nuevasTraducciones);
+    setCategorias(nuevasCategorias);
+    setColoresCategorias(nuevosColores);
+    setSugerencias(nuevasSugerencias);
+
+    const hayTraducciones = nuevasTraducciones.some(
+      (traduccion) => miDiccionario[traduccion]
+    );
+    setHayTraducciones(hayTraducciones);
+  }
+
+  function obtenerColorCategoria(categoria) {
+    if (categoria == "sustantivo") {
+      return "text-green-500";
+    } else if (categoria == "adjetivo") {
+      return "text-blue-500";
+    } else if (categoria == "articulo") {
+      return "text-yellow-500";
+    } else if (categoria == "pronombre") {
+      return "text-red-500";
+    } else if (categoria == "verbo") {
+      return "text-purple-500";
+    } else if (categoria == "adverbio") {
+      return "text-pink-500";
+    } else if (categoria == "preposicion") {
+      return "text-indigo-500";
+    } else if (categoria == "conjuncion") {
+      return "text-gray-500";
+    } else if (categoria == "interjección") {
+      return "text-blue-500";
     }
   }
 
@@ -77,11 +177,19 @@ export default function Home() {
 
     setMiDiccionario((prevDiccionario) => ({
       ...prevDiccionario,
-      [palabraNormalizada]: significadoNormalizado,
-      [significadoNormalizado]: palabraNormalizada,
+      [palabraNormalizada]: {
+        traduccion: significadoNormalizado,
+        categoria: categoriaSeleccionada,
+      },
+      [significadoNormalizado]: {
+        traduccion: palabraNormalizada,
+        categoria: categoriaSeleccionada,
+      },
     }));
 
-    setTraduccion(significado);
+    setTraduccion(significadoNormalizado);
+    setSignificado("");
+    setCategoria(categoriaSeleccionada);
   }
 
   return (
@@ -98,83 +206,168 @@ export default function Home() {
               setPalabra={setPalabra}
               palabra={palabra}
             />
-            {/* <button
-              className="text-gray-100 rounded-r-lg bg-blue-600 py-2 px-3 border-2 border-blue-600/[0.3] flex items-center "
-              onClick={handleTranslate}>
-              Traducir{" "}
-              <span>
-                <svg
-                  className="ml-2"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="m12.87 15.07l-2.54-2.51l.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35C8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5l3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7l1.62-4.33L19.12 17z"
-                  />
-                </svg>
-              </span>
-            </button> */}
           </div>
 
-          {traduccion ? (
+          {traducciones.length > 0 && (
             <div className="text-gray-100 mt-12 text-center">
               <h2 className="text-3xl md:text-4xl font-bold">
                 Traducción encontrada:
               </h2>
-              <p className="mt-4 text-2xl md:text-3xl font-light">
-                {traduccion}
+              <p className="mt-4 text-2xl md:text-3xl font-light text-white">
+                {traducciones.map((traduccion, index) => (
+                  <span
+                    key={index}
+                    className={` ${coloresCategorias[index]} mr-2`}>
+                    {traduccion}
+                  </span>
+                ))}
+              </p>
+
+              {/* Mostrar sugerencias si las hay */}
+              {sugerencias.some((sug) => sug && sug.length > 0) && (
+                <div className="mt-6">
+                  <h3 className="text-xl font-bold">Sugerencias:</h3>
+                  <p className="mt-2 text-lg">
+                    {palabras.map((palabraOriginal, index) => (
+                      <span key={index}>
+                        {sugerencias[index] && sugerencias[index].length > 0 ? (
+                          <span>
+                            {"¿Quisiste decir "}
+                            {sugerencias[index].map((sug, idx) => (
+                              <button
+                                key={idx}
+                                className="text-blue-400 mr-1"
+                                onClick={() => {
+                                  // Reemplazar la palabra original por la sugerida y volver a traducir
+                                  const nuevasPalabras = [...palabras];
+                                  nuevasPalabras[index] = sug;
+                                  setPalabra(nuevasPalabras.join(" "));
+                                }}>
+                                {sug}
+                              </button>
+                            ))}
+                            {"?"}
+                          </span>
+                        ) : null}{" "}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!hayTraducciones && buscado && (
+            <div className="text-gray-100 mt-12 text-center font-light">
+              {/* {sugerencias.length > 0 && (
+                <div>
+                  <p className="mt-4 text-lg">
+                    ¿Quisiste decir:{" "}
+                    {sugerencias.map((sug, idx) => (
+                      <button
+                        key={idx}
+                        className="text-blue-400"
+                        onClick={() => {
+                          setPalabra(sug);
+                          // handleTranslate();
+                        }}>
+                        {sug}
+                        {idx < sugerencias.length - 1 ? ", " : ""}
+                      </button>
+                    ))}
+                    ?
+                  </p>
+                </div>
+              )} */}
+
+              <h2 className="text-3xl md:text-4xl font-bold mt-8">
+                No se encontró traducción
+              </h2>
+
+              <div className="flex justify-center space-x-6 mt-12">
+                <input
+                  className="text-gray-100 flex w-[250px] md:w-[400px] h-[44px]  py-2 px-3 border-2 border-gray-100/[0.3] rounded-lg bg-transparent "
+                  type="text"
+                  label="text"
+                  placeholder="Ingresa el significado"
+                  onChange={(e) => setSignificado(e.target.value)}
+                  required={true}
+                />
+                <select
+                  className="text-gray-100 flex w-[250px] md:w-[400px] h-[44px]  py-2 px-3 border-2 border-gray-100/[0.3] rounded-lg bg-transparent"
+                  value={categoriaSeleccionada}
+                  onChange={(e) => setCategoriaSeleccionada(e.target.value)}
+                  required={true}>
+                  <option
+                    value=""
+                    disabled={true}>
+                    Selecciona una categoría
+                  </option>
+                  <option value="sustantivo">Sustantivo</option>
+                  <option value="adjetivo">Adjetivo</option>
+                  <option value="artículo">Artículo</option>
+                  <option value="pronombre">Pronombre</option>
+                  <option value="verbo">Verbo</option>
+                  <option value="adverbio">Adverbio</option>
+                  <option value="preposición">Preposición</option>
+                  <option value="conjunción">Conjunción</option>
+                  <option value="interjección">Interjección</option>
+                </select>
+              </div>
+              <button
+                className="mt-8 py-2 px-3 border-2 border-blue-500/[0.8] rounded-lg transition-all duration-300 hover:bg-blue-500/[0.8]"
+                onClick={handleAdd}
+                disabled={!significado || !categoriaSeleccionada}>
+                Agregar
+              </button>
+            </div>
+          )}
+          {/* {categoria == "" ? null : (
+            <div className="flex justify-center items-center mt-6">
+              <p
+                className={`text-gray-100 w-auto text-lg p-2 rounded-lg  ${colorCategoria}`}>
+                {categoria}
               </p>
             </div>
-          ) : (
-            buscado && (
-              <div className="text-gray-100 mt-12 text-center font-light">
-                {sugerencias.length > 0 && (
-                  <div>
-                    <p className="mt-4 text-lg">
-                      ¿Quisiste decir:{" "}
-                      {sugerencias.map((sug, idx) => (
-                        <button
-                          key={idx}
-                          className="text-blue-400"
-                          onClick={() => {
-                            setPalabra(sug);
-                            // handleTranslate();
-                          }}>
-                          {sug}
-                          {idx < sugerencias.length - 1 ? ", " : ""}
-                        </button>
-                      ))}
-                      ?
-                    </p>
-                  </div>
-                )}
-
-                <h2 className="text-3xl md:text-4xl font-bold mt-8">
-                  No se encontró traducción
-                </h2>
-
-                <div className="flex justify-center">
-                  <div>
-                    <input
-                      className="text-gray-100 flex w-[250px] md:w-[400px] py-2 px-3 border-2 border-gray-100/[0.3] rounded-lg bg-transparent mt-12"
-                      type="text"
-                      label="text"
-                      placeholder="Ingresa el significado"
-                      onChange={(e) => setSignificado(e.target.value)}
-                      required={true}
-                    />
-                    <button
-                      className="mt-8 py-2 px-3 border-2 border-blue-500/[0.8] rounded-lg transition-all duration-300 hover:bg-blue-500/[0.8]"
-                      onClick={handleAdd}>
-                      Agregar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )
-          )}
+          )} */}
+          <div className="flex space-x-2 mt-6 mb-12">
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <p className="text-gray-100">sustantivo</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <p className="text-gray-100">adjetivo</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <p className="text-gray-100">artículo</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <p className="text-gray-100">pronombre</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <p className="text-gray-100">verbo</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
+              <p className="text-gray-100">adverbio</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
+              <p className="text-gray-100">preposición</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+              <p className="text-gray-100">conjunción</p>
+            </div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <p className="text-gray-100">interjección</p>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />
